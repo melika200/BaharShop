@@ -1,0 +1,118 @@
+﻿@using BaharShop.Application.Services.Dto
+
+@model PagedProductDto
+
+@{
+    ViewData["Title"] = "Products";
+    int pageSize = ViewBag.PageSize ?? 4;
+    string search = ViewBag.Search ?? "";
+    string sortOrder = ViewBag.SortOrder ?? "newest";
+}
+
+<div class="container">
+    <h1 style="font-size:30px;text-align:center">محصولات</h1>
+
+    <div class="search-sort-section">
+        <form method="get" asp-action="ProductPaginationPageNavbar" asp-controller="Product">
+            <input type="text" name="search" value="@search" placeholder="Search products..." class="search-input">
+            <select name="sortOrder" class="sort-dropdown">
+                @foreach (var order in new[] { "newest", "highest", "cheapest" })
+                {
+                    <option value="@order" selected="@(sortOrder == order)">
+                        @(order == "newest" ? "جدیدترین" : order == "highest" ? "گرون ترین" : "ارزان ترین")
+                    </option>
+                }
+            </select>
+            <button type="submit" class="search-button">جستجو</button>
+        </form>
+    </div>
+
+    <div class="flex-container">
+        @foreach (var product in Model.Items)
+        {
+            <div class="product-infoo" data-product-id="@product.Id">
+                <img src="/api/File/GetFile?filename=@product.ImagePath" alt="@product.Name" class="image-container">
+                <h2>@product.Name</h2>
+                <p>@product.Description</p>
+                <p><strong>قیمت:</strong> @string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:N0}", product.Price) تومان</p>
+                <p><strong>موجودی:</strong> <span class="stock-quantity">@product.Stock</span></p>
+                <p class="@(product.Stock == 0 ? "not-available" : "availablee")">
+                    @(product.Stock == 0 ? "اتمام موجودی" : "موجود")
+                </p>
+
+                <div class="quantity-and-add">
+                    <input type="number" id="quantity_@product.Id" min="1" max="@product.Stock" value="1" class="quantity-input" />
+                    <button class="add-to-cart" onclick="AddToBasket(@product.Id)">افزودن به سبد خرید</button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="pagination">
+        @for (int i = 1; i <= Model.TotalPage; i++)
+        {
+            <a class="@(i == Model.Page ? "current-page" : "page-link")"
+               asp-action="ProductPaginationPageNavbar"
+               asp-controller="Product"
+               asp-route-page="@i"
+               asp-route-pageSize="@pageSize"
+               asp-route-search="@search"
+               asp-route-sortOrder="@sortOrder">
+                @i
+            </a>
+        }
+    </div>
+</div>
+
+<script>
+    function AddToBasket(productId) {
+        var qtyInput = $('#quantity_' + productId);
+        var maxStock = parseInt(qtyInput.attr('max'));
+        var qty = parseInt(qtyInput.val());
+
+        if (qty > maxStock) {
+            Swal.fire({
+                icon: 'error',
+                title: 'خطا',
+                text: 'تعداد انتخابی بیشتر از موجودی محصول است.',
+            });
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("AddToBasket", "ShoppingCart")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ productId: productId, qty: qty }),
+            success: function (response) {
+                if (response.res) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'محصول به سبد خرید اضافه شد',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+
+                    // به‌روزرسانی مقدار موجودی در صفحه
+                    var newStock = maxStock - qty;
+                    var productInfoDiv = $('div[data-product-id="' + productId + '"]');
+                    productInfoDiv.find('.stock-quantity').text(newStock);
+                    qtyInput.attr('max', newStock);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطا',
+                        text: response.msg,
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطا',
+                    text: 'مشکلی در افزودن محصول به سبد خرید پیش آمد.',
+                });
+            }
+        });
+    }
+</script>

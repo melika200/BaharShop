@@ -1,0 +1,102 @@
+﻿<div class="container">
+    <div class="flex-container">
+        <div class="image-container">
+            <img src="/api/File/GetFile?filename=@Model.ImagePath" alt="@Model.Name" class="image-full">
+        </div>
+        <div class="product-info">
+            <h2 class="product-name">@Model.Name</h2>
+            <p class="product-price">
+                @string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:N0}", Model.Price) تومان
+            </p>
+
+            <div class="quantity-and-add">
+                <input type="number" id="quantity_@Model.Id" min="1" max="@Model.Stock" value="1" class="quantity-input" />
+                <button class="add-to-cart" onclick="AddToBasket(@Model.Id)">افزودن به سبد خرید</button>
+            </div>
+            <div class="more-info">
+                <p class="delivery-return">
+                    <i class="fa fa-car-side"></i> تحویل
+                </p>
+                <p class="ask-question">
+                    <i class="fa fa-question"></i> ارسال سوالات
+                </p>
+            </div>
+        </div>
+        <div class="product-description">
+            <h3 class="description-title">توضیحات محصول</h3>
+            <p class="description-text">@Model.Description</p>
+            <p>Stock: <span id="stock_@Model.Id">@Model.Stock</span></p>
+            @if (Model.Category != null)
+            {
+                <p>Category: @Model.Category.Name</p>
+            }
+            @if (Model.IsAvail)
+            {
+                <p>موجود</p>
+            }
+            else
+            {
+                <p>اتمام موجودی</p>
+            }
+        </div>
+    </div>
+    <a href="@Url.Action("Index", "Product")" style="display:block;margin:35px;color:cadetblue;text-decoration:none;">بازگشت به صفحه محصولات</a>
+</div>
+<script>
+    function AddToBasket(productId) {
+        var qtyInput = $('#quantity_' + productId);
+        var qty = qtyInput.val(); // Get the quantity from the input field
+        var maxStock = parseInt(qtyInput.attr('max')); // Get the maximum stock value
+
+        if (qty > maxStock) {
+            Swal.fire({
+                icon: 'error',
+                title: 'خطا',
+                text: 'تعداد انتخابی بیشتر از موجودی محصول است.',
+            });
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("AddToBasket", "ShoppingCart")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ productId: productId, qty: qty }),
+            success: function (response) {
+                if (response.res) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'محصول به سبد خرید اضافه شد',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+
+                    // به‌روزرسانی مقدار موجودی در صفحه
+                    var newStock = maxStock - qty;
+                    $('#stock_' + productId).text(newStock);
+                    qtyInput.attr('max', newStock);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطا',
+                        text: response.msg,
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطا',
+                    text: 'مشکلی در افزودن محصول به سبد خرید پیش آمد.',
+                });
+            }
+        });
+    }
+</script>
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+

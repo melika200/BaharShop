@@ -1,5 +1,10 @@
 using BaharShop.Application.Interface.Context;
+using BaharShop.Application.InterfaceRepository;
+using BaharShop.Application.Services;
+using BaharShop.Domain.UploadFile;
 using BaharShop.Persistence.Context;
+using BaharShop.Persistence.Repository;
+using BaharShop.Persistence.Repository.uploadfile;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +16,11 @@ builder.Services.AddDbContext<StoreDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddScoped<IDatabaseContext>(provider => provider.GetService<StoreDbContext>());
+builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<ProductServices>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<CategoryService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

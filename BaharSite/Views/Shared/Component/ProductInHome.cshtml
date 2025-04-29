@@ -1,0 +1,121 @@
+﻿@model List<BaharShop.Domain.Product>
+
+<div class="container mt-5 mb-5">
+    <h3 style="text-align:center;font-size:30px;color:dimgrey;margin:18px 0px">محصولات</h3>
+    <div class="row">
+
+        @foreach (var product in Model)
+        {
+
+            <div class="col-md-4 mb-4">
+                <div class="card shadow rounded">
+                    <a asp-action="Details" asp-controller="Product" asp-route-id="@product.Id">
+                        <img src="api/File/GetFile?filename=@product.ImagePath" alt="@product.Name" class="card-img-top img-fluid py-3" style="height: 200px; object-fit: contain;">
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-center font-bold text-gray-900">@product.Name</h5>
+                        @* <p class="card-text text-lg text-gray-600 text-center">@product.Price</p> *@
+                        <p class="card-text text-lg text-gray-600 text-center">
+                            @string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:N0}", product.Price) تومان
+                        </p>
+
+                        <div class="text-center">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fa fa-star"
+                                   data-value="@i"
+                                   style="cursor:pointer; color:@(i <= product.AverageRating ? "gold" : "gray")"
+                                   onclick="rateProduct(@product.Id, @i, this)"></i>
+                            }
+                        </div>
+                        <p class="text-center" id="averageRating_@product.Id">میانگین امتیاز: @product.AverageRating</p>
+                        <div style="text-align:center">
+                            <input type="number" id="quantity_@product.Id" min="1" max="@product.Stock" value="1" class="quantity-input" />
+                            <button class="add-to-cart" onclick="AddToBasket(@product.Id)">افزودن به سبد خرید</button>
+                        </div>
+                        <p class="text-center" id="stock_@product.Id">موجودی: @product.Stock</p>
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function rateProduct(productId, rating, starElement) {
+        const stars = starElement.parentElement.children;
+        for (let i = 0; i < stars.length; i++) {
+            stars[i].style.color = i < rating ? 'gold' : 'gray';
+        }
+
+        $.post('@Url.Action("RateProduct", "Product")', { productId: productId, rating: rating })
+            .done(function (response) {
+                if (response.success) {
+                    $('#averageRating_' + productId).text('میانگین امتیاز: ' + response.newAverageRating.toFixed(2));
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'موفقیت!',
+                        text: response.message,
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطا!',
+                        text: response.message,
+                    });
+                }
+            });
+    }
+</script>
+
+<script>
+    function AddToBasket(productId) {
+        var qtyInput = $('#quantity_' + productId);
+        var qty = qtyInput.val();
+        var maxStock = parseInt(qtyInput.attr('max'));
+
+        if (qty > maxStock) {
+            Swal.fire({
+                icon: 'error',
+                title: 'خطا',
+                text: 'تعداد انتخابی بیشتر از موجودی محصول است.',
+            });
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("AddToBasket", "ShoppingCart")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ productId: productId, qty: qty }),
+            success: function (response) {
+                if (response.res) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'محصول به سبد خرید اضافه شد',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+
+                    var newStock = maxStock - qty;
+                    $('#stock_' + productId).text('موجودی: ' + newStock);
+                    qtyInput.attr('max', newStock);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطا',
+                        text: response.msg,
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطا',
+                    text: 'مشکلی در افزودن محصول به سبد خرید پیش آمد.',
+                });
+            }
+        });
+    }
+</script>
