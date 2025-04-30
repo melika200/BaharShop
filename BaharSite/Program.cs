@@ -4,7 +4,7 @@ using BaharShop.Application.Services;
 using BaharShop.Domain.UploadFile;
 using BaharShop.Persistence.Context;
 using BaharShop.Persistence.Repository;
-using BaharShop.Persistence.Repository.uploadfile;
+using BaharShop.Persistence.Repository.UploadFile;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
