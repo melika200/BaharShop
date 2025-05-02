@@ -1,5 +1,9 @@
-﻿<div class="container">
-    <div class="flex-container">
+﻿@{
+    ViewData["Title"] = "Details";
+}
+
+<div class="container">
+    <div class="flex-container" style="padding-top:20px">
         <div class="image-container">
             <img src="/api/File/GetFile?filename=@Model.ImagePath" alt="@Model.Name" class="image-full">
         </div>
@@ -14,12 +18,10 @@
                 <button class="add-to-cart" onclick="AddToBasket(@Model.Id)">افزودن به سبد خرید</button>
             </div>
             <div class="more-info">
-                <p class="delivery-return">
+                <p class="delivery-return" style="padding:10px">
                     <i class="fa fa-car-side"></i> تحویل
                 </p>
-                <p class="ask-question">
-                    <i class="fa fa-question"></i> ارسال سوالات
-                </p>
+               
             </div>
         </div>
         <div class="product-description">
@@ -40,7 +42,7 @@
             }
         </div>
     </div>
-    <a href="@Url.Action("Index", "Product")" style="display:block;margin:35px;color:cadetblue;text-decoration:none;">بازگشت به صفحه محصولات</a>
+    <a href="@Url.Action("productPaginationPageNavbar", "Product")" style="display:block;margin:35px;color:cadetblue;text-decoration:none;">بازگشت به صفحه محصولات</a>
 </div>
 <script>
     function AddToBasket(productId) {
@@ -94,9 +96,4 @@
     }
 </script>
 
-@{
-    ViewData["Title"] = "Details";
-}
-
-<h1>Details</h1>
 

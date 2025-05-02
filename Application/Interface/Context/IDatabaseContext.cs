@@ -13,6 +13,10 @@ namespace BaharShop.Application.Interface.Context
     {
         DbSet<Product> Products { get; set; }
         DbSet<Category> Categories { get; set; }
+        DbSet<User> Users { get; set; }
+
+        DbSet<ShoppingCart> ShoppingCarts { get; set; }
+        DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
         int SaveChanges(bool acceptAllChangesOnSuccess);
         int SaveChanges();
         Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken());

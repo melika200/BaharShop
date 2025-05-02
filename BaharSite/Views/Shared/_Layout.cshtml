@@ -20,6 +20,19 @@
             <div id="desktopNav" class="navbar">
                 <a asp-controller="Home" asp-action="Index" class="atext">خانه</a>
                 <a class="atext" asp-controller="Product" asp-action="ProductPaginationPageNavbar">محصولات</a>
+
+                @if (Context.User.Identity.IsAuthenticated)
+                {
+                    <a class="atext" asp-controller="Profile" asp-action="Index">پروفایل</a>
+                    <form method="post" asp-controller="Authentication" asp-action="SignOut">
+                        <button type="submit" class="atext">خروج</button>
+                    </form>
+                }
+
+                else
+                {
+                    <a class="atext" asp-controller="Authentication" asp-action="Login">ثبت نام/ورود</a>
+                }
                 <a asp-controller="Home" asp-action="AboutUs" class="atext">درباره با ما</a>
                 <a asp-controller="ShoppingCart" asp-action="Basket" class="atext">سبد خرید</a>
 

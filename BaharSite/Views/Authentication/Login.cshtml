@@ -1,0 +1,40 @@
+﻿@using BaharSite.ViewModel
+
+@model LoginViewModel
+
+@{
+    ViewData["Title"] = "ورود";
+}
+@if (ViewBag.ShowRegisterAlert != null && ViewBag.ShowRegisterAlert)
+{
+    <script>
+        Swal.fire({
+            title: 'ثبت نام',
+            text: 'قبل از ورود ،ثبت نام کنید',
+            icon: 'warning',
+            confirmButtonText: 'باشه'
+        });
+    </script>
+}
+}
+<div class="LoginContainer">
+    <form asp-action="Login" method="post" class="login-form">
+        <h2>ورود</h2>
+        <div class="input-group">
+            <label asp-for="Email">ایمیل</label>
+            <input asp-for="Email" type="email" id="email" name="email" required>
+        </div>
+        <div class="input-group">
+            <label asp-for="Password">رمز عبور</label>
+            <input asp-for="Password" type="password" id="password" name="password" required>
+        </div>
+        <div>
+            <input asp-for="RememberMe" type="checkbox" />
+            <label asp-for="RememberMe">مرا به خاطر بسپار</label>
+        </div>
+        <button type="submit" style="font-family: Bykan; font-size: 18px;">ورود</button>
+        <p>آیا اکانت نداری? <a asp-controller="Authentication" asp-action="Register">ثبت نام</a></p>
+    </form>
+</div>
+
+

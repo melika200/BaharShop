@@ -1,0 +1,186 @@
+﻿@using BaharSite.ViewModel
+
+@model BasketViewModel
+
+@{
+    ViewData["Title"] = "Shopping Cart";
+}
+
+<h2 style="margin-top:15px">سبد خرید</h2>
+
+@if (Model.Items != null && Model.Items.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>تصویر محصول</th>
+                <th>نام محصول</th>
+                <th>تعداد</th>
+                <th>قیمت</th>
+                <th>کل</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>
+                        <img src="/api/File/GetFile?filename=@item.Product.ImagePath" alt="@item.Product.Name" class="rounded-image" />
+                    </td>
+                    <td>@item.Product.Name</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary decrease-qty" data-id="@item.Id">-</button>
+                        <input type="number" class="qty-input" data-id="@item.Id" value="@item.Quantity" min="1" data-product-id="@item.Product.Id" />
+                        <button class="btn btn-sm btn-primary increase-qty" data-id="@item.Id">+</button>
+                        <p class="stock-message" id="stockMessage_@item.Id" style="color: red; display: none;">
+                            موجودی کافی نیست!
+                        </p>
+                    </td>
+                    <td class="price" data-id="@item.Id">
+                        @string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:N0}", item.Price) تومان
+                    </td>
+                    <td class="total-price" data-id="@item.Id">
+                        @string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:N0}", item.Price * item.Quantity) تومان
+                    </td>
+                    <td>
+                        <button class="btn btn-danger remove-item" data-id="@item.Id">حذف</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div>
+        <h4 style="margin:10px">
+            Total: @string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:N0}", Model.Items.Sum(i => i.Price * i.Quantity)) تومان
+        </h4>
+    </div>
+
+    <a asp-controller="ShoppingCart" style="background-color:cadetblue;color:black;padding:10px;border-radius:10px;margin:10px" asp-action="Pay" class="atext">ادامه فرایند خرید</a>
+}
+else
+{
+    <p>سبد خرید شما خالی است.</p>
+}
+
+@section Scripts {
+    <script>
+        var isUserAuthenticated = @User.Identity.IsAuthenticated.ToString().ToLower();
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        $(document).ready(function () {
+            $('.remove-item').click(function () {
+                var itemId = $(this).data('id');
+
+                Swal.fire({
+                    title: 'آیا مطمئن هستید؟',
+                    text: "این آیتم از سبد خرید حذف شود",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'بله، حذف شود!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '@Url.Action("RemoveBasket", "ShoppingCart")',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ Id: itemId }),
+                            success: function (response) {
+                                if (response.res) {
+                                    location.reload();
+                                }
+                            },
+                            error: function () {
+                                Swal.fire("هشدار", "خطایی رخ داده. حذف نشد", "error");
+                            }
+                        });
+                    }
+                });
+            });
+
+            $('.increase-qty, .decrease-qty').click(function () {
+                var itemId = $(this).data('id');
+                var input = $('.qty-input[data-id="' + itemId + '"]');
+                var productId = input.data('product-id');
+                var currentQty = parseInt(input.val());
+                var newQty = $(this).hasClass('increase-qty') ? currentQty + 1 : Math.max(currentQty - 1, 1);
+
+                $.get('@Url.Action("GetStock", "Product")', { productId: productId }, function (stock) {
+                    if (newQty > stock) {
+                        $('#stockMessage_' + itemId).show();
+                        return;
+                    }
+                    $('#stockMessage_' + itemId).hide();
+                    input.val(newQty);
+                    updateCart(itemId, newQty);
+                });
+            });
+
+            $('.qty-input').change(function () {
+                var itemId = $(this).data('id');
+                var productId = $(this).data('product-id');
+                var newQty = Math.max(parseInt($(this).val()), 1);
+
+                $.get('@Url.Action("GetStock", "Product")', { productId: productId }, function (stock) {
+                    if (newQty > stock) {
+                        $('#stockMessage_' + itemId).show();
+                        return;
+                    }
+                    $('#stockMessage_' + itemId).hide();
+                    updateCart(itemId, newQty);
+                });
+            });
+
+            function updateCart(itemId, newQty) {
+                $.ajax({
+                    url: '@Url.Action("UpdateBasketItem", "ShoppingCart")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ Id: itemId, Quantity: newQty }),
+                    success: function (response) {
+                        if (response.res) {
+                            var price = parseFloat(response.price);
+                            $('.price[data-id="' + itemId + '"]').text(formatNumber(Math.round(price)) + " تومان");
+                            $('.total-price[data-id="' + itemId + '"]').text(formatNumber(Math.round(price * newQty)) + " تومان");
+                            updateTotalPrice();
+                        }
+                    }
+                });
+            }
+
+            function updateTotalPrice() {
+                var total = 0;
+                $('.total-price').each(function () {
+                    var text = $(this).text().replace(/[^\d]/g, "");
+                    total += parseInt(text) || 0;
+                });
+                $('h4').text("Total: " + formatNumber(total) + " تومان");
+            }
+
+            $('#shoppingCartLink').click(function (e) {
+                if (!isUserAuthenticated) {
+                    e.preventDefault();
+
+                    Swal.fire({
+                        title: "ورود لازم است",
+                        text: "لطفا برای مشاهده سبد خرید وارد شوید.",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "ورود",
+                        cancelButtonText: "بستن"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '@Url.Action("Login", "Authentication")';
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

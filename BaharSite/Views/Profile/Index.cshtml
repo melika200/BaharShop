@@ -1,0 +1,66 @@
+﻿@using BaharShop.Application.Helper
+@using BaharShop.Domain
+
+@model List<ShoppingCart>
+
+@{
+    ViewData["Title"] = "سفارشات من";
+}
+
+<div class="container" style="margin-top:10px">
+    <h2>سفارشات من</h2>
+
+    @if (Model == null || !Model.Any())
+    {
+        <p>شما هنوز سفارشی ثبت نکرده‌اید.</p>
+    }
+    else
+    {
+        @foreach (var order in Model)
+        {
+            <div class="order">
+                <div class="order-header">
+                    <div>
+                        <span class="order-id">سفارش شماره #@order.Id</span>
+                        @if (order.Status == BaharShop.Domain.Enum.Status.Accepted)
+                        {
+                            <span class="status" style="color:green;">ارسال شده</span>
+                        }
+                        else if (order.Status == BaharShop.Domain.Enum.Status.Rejected)
+                        {
+                            <span class="status" style="color:red;">لغو شده</span>
+                        }
+                        else if (order.Status == BaharShop.Domain.Enum.Status.Final)
+                        {
+                            <span class="status" style="color:blue;">در انتظار تایید</span>
+                        }
+                        else if (order.Status == BaharShop.Domain.Enum.Status.Created)
+                        {
+                            <span class="status" style="color:gray;">در حال پردازش</span>
+                        }
+                    </div>
+                    <div>
+                        <span class="order-date">@order.Payed.ToPersianDateString()</span>
+                    </div>
+                </div>
+                <div class="order-details">
+                    <div>آدرس: @order.Address</div>
+                    <div>شماره تماس: @order.Mobile</div>
+                </div>
+                <div class="order-items">
+                    @foreach (var item in order.Items)
+                    {
+                        <div class="item">
+                            @item.Product.Name - تعداد: @item.Quantity - قیمت: @string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:N0}", item.Price) تومان
+                        </div>
+                    }
+                </div>
+                <div class="total">
+                    قیمت نهایی: @string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:N0}", order.Items.Sum(i => i.Price * i.Quantity)) تومان
+                </div>
+
+            </div>
+        }
+    }
+</div>
+

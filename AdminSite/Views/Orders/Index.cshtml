@@ -1,0 +1,75 @@
+﻿@using BaharShop.Application.Helper
+@using BaharShop.Application.Services.Dto
+
+
+
+@model List<AdminOrderDto>
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                کاربر
+            </th>
+            <th>
+                موبایل
+            </th>
+            <th>
+                تاریخ
+            </th>
+            <th>
+                وضعیت
+            </th>
+            <th>
+                محصولات
+            </th>
+            <th>
+
+            </th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @item.UserName
+                </td>
+                <td>
+                    @item.Mobile
+                </td>
+                <td>
+                    @item.Payed.ToPersianDateString()
+                </td>
+                <td>
+                    @if (item.Status == BaharShop.Domain.Enum.Status.Accepted)
+                    {
+                        <span class="status">ارسال شده</span>
+                    }
+                    else if (item.Status == BaharShop.Domain.Enum.Status.Rejected)
+                    {
+                        <span style="color:red" class="status">لغو شده</span>
+                    }
+                    else if (item.Status == BaharShop.Domain.Enum.Status.Final)
+                    {
+                        <span style="color:blue" class="status">در انتظار تایید</span>
+
+                    }
+                </td>
+                <td>
+                    @String.Join(",", @item.Items)
+
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

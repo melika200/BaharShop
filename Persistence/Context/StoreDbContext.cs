@@ -18,13 +18,33 @@ namespace BaharShop.Persistence.Context
 
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<User> Users { get; set; }
+
+        public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+        public DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ApplyQueryFilter(modelBuilder);
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<ShoppingCart>()
+                .HasOne(sc => sc.User)
+                .WithMany(c => c.ShoppingCarts)
+                .HasForeignKey(sc => sc.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ShoppingCartItem>()
+                .HasOne(sci => sci.ShoppingCart)
+                .WithMany(sc => sc.Items)
+                .HasForeignKey(sci => sci.ShoppingCartId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             modelBuilder.Entity<Product>()
                 .Property(p => p.Price)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<ShoppingCartItem>()
+                .Property(sci => sci.Price)
                 .HasColumnType("decimal(18,2)");
         }
 
@@ -32,7 +52,9 @@ namespace BaharShop.Persistence.Context
         {
             modelBuilder.Entity<Product>().HasQueryFilter(p => !p.IsRemoved);
             modelBuilder.Entity<Category>().HasQueryFilter(c => !c.IsRemoved);
-         
+            modelBuilder.Entity<ShoppingCart>().HasQueryFilter(sc => !sc.IsRemoved);
+            modelBuilder.Entity<ShoppingCartItem>().HasQueryFilter(sci => !sci.IsRemoved);
+
         }
         public int SaveChanges(bool acceptAllChangesOnSuccess)
         {

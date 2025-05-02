@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Common\BaharShop.Common.csproj" />
     <ProjectReference Include="..\Domain\BaharShop.Domain.csproj" />
   </ItemGroup>
 
