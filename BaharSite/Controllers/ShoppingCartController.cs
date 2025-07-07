@@ -50,6 +50,7 @@ namespace BaharSite.Controllers
         [Authorize]
         public async Task<IActionResult> Basket()
         {
+            //شناسه کاربر لاگین‌شده را از توکن احراز هویت استخراج می‌کند.
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {

@@ -10,6 +10,7 @@ namespace BaharShop.Application.InterfaceRepository
 {
     public interface IShoppingCartRepository
     {
+        //همه‌ی سبدهای خرید
         IQueryable<ShoppingCart> GetAll(Expression<Func<ShoppingCart, bool>> where = null);
         Task<ShoppingCart> GetById(int id);
 
@@ -17,7 +18,7 @@ namespace BaharShop.Application.InterfaceRepository
         Task Update(ShoppingCart shoppingcart);
         Task Delete(int id);
         Task Delete(ShoppingCart shoppingcart);
-
+        // همه آیتم‌های داخل سبد خرید
         IQueryable<ShoppingCartItem> GetAllBasketItems(Expression<Func<ShoppingCartItem, bool>> where = null);
         Task AddBasketItem(ShoppingCartItem item);
         Task DeleteBasketItem(ShoppingCartItem item);

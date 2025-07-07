@@ -47,6 +47,7 @@ namespace BaharShop.Persistence.Repository
 
             return await products.ToListAsync();
         }
+        //محصولات همراه با اطلاعات دسته‌بندی‌شان
         public async Task<IEnumerable<Product>> GetAllWithCategory(Expression<Func<Product, bool>> where = null)
         {
             IQueryable<Product> products = _context.Products.Include(p => p.Category);
@@ -66,7 +67,7 @@ namespace BaharShop.Persistence.Repository
                .Include(p => p.Category) 
                .FirstOrDefaultAsync(p => p.Id == id);
         }
-
+        //فقط محصولاتی که در دسته‌بندی مشخص شده 
         public async Task<IEnumerable<Product>> GetProductsByCategoryId(long categoryId)
         {
             return await _context.Products

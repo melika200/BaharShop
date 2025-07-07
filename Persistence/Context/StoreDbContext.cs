@@ -9,12 +9,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BaharShop.Persistence.Context
 {
+    // برای مدیریت ارتباط با دیتابیس
     public class StoreDbContext :DbContext, IDatabaseContext
     {
         public StoreDbContext(DbContextOptions<StoreDbContext> options) : base(options)
         {
         }
-
+        //هر کدی که به این کلاس دسترسی داشته باشد، می‌تواند به این مجموعه‌ها دسترسی داشته باشد.
+        //عمولاً در کلاس‌های DbContext این حالت استفاده می‌شود چون می‌خواهیم از بیرون به داده‌ها دسترسی داشته باشیم.
 
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }

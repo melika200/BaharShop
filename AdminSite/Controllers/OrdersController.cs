@@ -11,11 +11,13 @@ namespace AdminSite.Controllers
         {
             _ShoppingCartService = ShoppingCartService;
         }
+        // نمایش صفحه‌ای است که لیست همه سفارش‌ها را نشان می‌دهد.
         public async Task<IActionResult> Index()
         {
             var data = await _ShoppingCartService.GetAllOrders();
             return View(data);
         }
+        //نمایش صفحه ویرایش یا جزئیات یک سفارش خاص 
         public async Task<IActionResult> Edit(long id)
         {
             var data = await _ShoppingCartService.GetOrderWithId(id);
@@ -25,6 +27,7 @@ namespace AdminSite.Controllers
 
 
         [HttpPost]
+        //تغییر وضعیت یک سفارش 
         public async Task<IActionResult> SetStatusCommand([FromBody] StatusDto model)
         {
             var data = await _ShoppingCartService.SetStatus(model.Id, model.State);
